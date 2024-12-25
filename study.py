@@ -2,6 +2,7 @@ from openai import OpenAI
 from typing_extensions import override
 from openai import AssistantEventHandler
 import run
+
 client = OpenAI()
 
 def create_assistant():
@@ -45,27 +46,27 @@ def create_assistant():
             "- Ensure that questions address all significant concepts within the provided notes.\n"
             "- Consider varying the difficulty of questions to accommodate a range of student proficiency levels.\n"
             "- When dealing with complex PDFs, ensure that the extraction process maintains context and coherence for accurate question generation."
+            "- Put all the questions and answers into a TXT file. The format should be: Question, Answer. They should be separated with a comma."
         ),
         tools=[{"type": "file_search"}],
         model="gpt-4o",
     )
     return assistant
 
-assistant = create_assistant
+def generate_questions(text):
+    assistant = create_assistant
 
-thread = client.beta.threads.create()
+    thread = client.beta.threads.create()
 
-prompt = input("Enter message or add PDF file.\n")
-
-message = client.beta.threads.messages.create(
+    message = client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content=text
+    )
+    with client.beta.threads.runs.stream(
     thread_id=thread.id,
-    role="user",
-    content=prompt
-)
-with client.beta.threads.runs.stream(
-thread_id=thread.id,
-assistant_id=assistant.id,
-instructions="Please address the user formally.",
-event_handler=EventHandler(),
-) as stream:
-    stream.until_done()
+    assistant_id=assistant.id,
+    instructions="Please address the user formally.",
+    event_handler=EventHandler(),
+    ) as stream:
+        stream.until_done()
