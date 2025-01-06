@@ -5,7 +5,7 @@ from openai import AssistantEventHandler
 import run
 import study
 
-file = input("Type path to PDF file.")
+file = input("Type path to your notes.\n")
 reader = PdfReader(file)
 page = reader.pages[0]
 text = page.extract_text()
